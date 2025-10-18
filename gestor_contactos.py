@@ -6,6 +6,12 @@
 # Lista global donde se guardan los contactos
 contactos = []
 
+contactos.extend([{'nombre':'Juan Alonso','email':'juan@ejemplo.com','telefono':'3644242523'},
+                 {'nombre':'Pedro Araujo','email':'pedrito@hotmail.com','telefono':'3644202542'},
+                 {'nombre':'Juana Araujo','email':'juanaaraujo@gmail.com','telefono':'1124202523'},
+                 {'nombre':'Maria Lopez','email':'marial@ejemplo.com','telefono':'3624299523'},
+                 {'nombre':'Susana Diaz','email':'susana@gmail.com','telefono':'1144212323'}])
+
 def agregar_contacto(nombre, telefono, email):
     """
     Agrega un nuevo contacto al listado.
