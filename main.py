@@ -1,5 +1,5 @@
 # main.py
-# --------
+# ---------
 # Punto de inicio del programa.
 # Crea la ventana principal, carga la interfaz y ejecuta el bucle principal.
 
