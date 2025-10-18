@@ -171,7 +171,7 @@ def crear_interfaz(ventana, gestor):
     # Scroll vertical
     scrollbar = ttk.Scrollbar(ventana, orient="vertical", command=tree.yview)
     tree.configure(yscroll=scrollbar.set)
-    scrollbar.grid(row=4, column=3, sticky="ns")
+    scrollbar.grid(row=5, column=3, sticky="ns")
     
 
     # === CONFIGURACIÓN RESPONSIVA ===
