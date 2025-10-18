@@ -35,15 +35,25 @@ def buscar_contacto(nombre):
             return c
     return None
 
+def buscar_contactos(busqueda):
+    resultados_busqueda = [c for c in contactos if busqueda in c['nombre'].lower() or busqueda in c['email'].lower() or busqueda in c['telefono'].lower()]
+    if resultados_busqueda:
+        return resultados_busqueda
+    return 'Vacio'
+
 def eliminar_contacto(nombre):
     """
     Elimina un contacto por nombre.
     """
     global contactos
-    contactos = [c for c in contactos if c["nombre"].lower() != nombre.lower()]
+    contactos = [c for c in contactos if c['nombre'] != nombre]
 
-def obtener_todos():
+def obtener_todos(resultados_busqueda=None):
     """
     Devuelve una lista de todos los contactos actuales.
     """
-    return contactos
+    if not resultados_busqueda:
+        return contactos
+    elif resultados_busqueda=='Vacio':
+        return []
+    return resultados_busqueda

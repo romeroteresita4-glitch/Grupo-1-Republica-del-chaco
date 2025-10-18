@@ -6,6 +6,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk  # Para Treeview (tabla con columnas)
+import re # para la funcion match para comparar el email con el patrón válido
 
 def crear_interfaz(ventana, gestor):
     """
@@ -16,6 +17,11 @@ def crear_interfaz(ventana, gestor):
     - gestor: módulo o clase que contiene funciones de manejo de contactos
               (agregar_contacto, buscar_contacto, eliminar_contacto, obtener_todos)
     """
+    # funcion de validación de email
+    def email_valido(email):
+        # Regex básico para validar email
+        patron = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        return re.match(patron, email) is not None
 
     # === FUNCIONES INTERNAS DE LA INTERFAZ ===
     def agregar():
@@ -23,13 +29,16 @@ def crear_interfaz(ventana, gestor):
         nombre = entry_nombre.get()
         telefono = entry_telefono.get()
         email = entry_email.get()
-        if nombre and telefono:
-            gestor.agregar_contacto(nombre, telefono, email)
-            actualizar_lista()
-            ordenar_tabla(tree, columns[0], False)
-            limpiar_campos()
-        else:
+        if not nombre and not telefono:
             messagebox.showwarning("Atención", "Nombre y teléfono son obligatorios.")
+            return
+        
+        if email and not email_valido(email):
+            messagebox.showerror("Email inválido", "Por favor, ingresa un email con formato válido.")
+            return
+
+        gestor.agregar_contacto(nombre, telefono, email)
+        buscar_en_tabla()
 
     def buscar():
         """Busca un contacto por nombre y muestra el resultado."""
@@ -43,19 +52,39 @@ def crear_interfaz(ventana, gestor):
         else:
             messagebox.showinfo("Sin resultados", "No se encontró el contacto.")
 
-    def eliminar():
-        """Elimina el contacto con el nombre indicado."""
-        nombre = entry_nombre.get()
-        gestor.eliminar_contacto(nombre)
-        actualizar_lista()
-        ordenar_tabla(tree, columns[0], False)
-        limpiar_campos()
+    # busqueda automática en tabla
+    def buscar_en_tabla():
+        busqueda = entry_buscar.get().strip().lower()
 
-    def actualizar_lista():
+        # si el input buscar está vacío muesta todos los contactos
+        if not busqueda:
+            actualizar_lista()
+            ordenar_tabla(tree, columns[0], False) 
+            return
+        
+        # si el input no está vacío busca contactos que coincidan con la búsqueda
+        resultados_busqueda= gestor.buscar_contactos(busqueda)
+        actualizar_lista(resultados_busqueda)
+        ordenar_tabla(tree, columns[0], False)
+        
+    def eliminar():
+        """Elimina el contacto con el nombre indicado."""       
+        
+        contacto = tree.selection()
+        if not contacto:
+            messagebox.showwarning("Selecciona", "Debes seleccionar un contacto para eliminar.")
+            return
+        nombre = tree.item(contacto)['values'][0]
+        confirm = messagebox.askyesno("Confirmar", f"¿Estás seguro de eliminar al contacto {nombre}?")
+        if confirm:
+            gestor.eliminar_contacto(nombre)
+        buscar_en_tabla()
+        
+    def actualizar_lista(resultados_busqueda=None):
         """Actualiza la lista de contactos mostrada en pantalla."""
         for item in tree.get_children():
             tree.delete(item)
-        for c in gestor.obtener_todos():
+        for c in gestor.obtener_todos(resultados_busqueda):
             tree.insert("", "end", values=(c['nombre'], c['telefono'], c['email']))
 
     def limpiar_campos():
@@ -63,8 +92,9 @@ def crear_interfaz(ventana, gestor):
         entry_nombre.delete(0, tk.END)
         entry_telefono.delete(0, tk.END)
         entry_email.delete(0, tk.END)
-
-    # se utiliza para ordenar los contactos según la preferencia del usuario
+        entry_buscar.delete(0, tk.END)
+        
+    # se utiliza para ordenar los contactos según la columna de preferencia del usuario
     def ordenar_tabla(treeview, col, reverse):
         # Obtener todos los datos
         data = [(treeview.set(k, col), k) for k in treeview.get_children('')]
@@ -79,7 +109,15 @@ def crear_interfaz(ventana, gestor):
         for index, (val, k) in enumerate(data):
             treeview.move(k, '', index)
 
-        # Cambiar el encabezado para indicar la dirección del orden
+        # Limpiar flechas de todos los encabezados
+        for c in treeview["columns"]:
+            treeview.heading(c, text=c)
+
+        # Agregar flecha al encabezado de la columna ordenada
+        flecha = "▲" if not reverse else "▼"
+        treeview.heading(col, text=f"{col.center(50)}{flecha}")
+
+        # Cambiar el encabezado para invertir la dirección al hacer clic
         treeview.heading(col, command=lambda _col=col, _rev=not reverse: ordenar_tabla(treeview, _col, _rev))
 
 
@@ -107,12 +145,18 @@ def crear_interfaz(ventana, gestor):
     # Botones
     tk.Button(ventana, text="Agregar", command=agregar).grid(row=3, column=0, sticky="we", padx=5, pady=5)
     tk.Button(ventana, text="Buscar", command=buscar).grid(row=3, column=1, sticky="we", padx=5, pady=5)
-    tk.Button(ventana, text="Eliminar", command=eliminar).grid(row=3, column=2, sticky="we", padx=5, pady=5)
+    tk.Button(ventana, text="Eliminar", command=eliminar).grid(row=6, column=2, sticky="we", padx=5, pady=5)
+
+    # Buscar en tabla
+    tk.Label(ventana, text="Buscar: ").grid(row=4, column=0, sticky="e", padx=5, pady=5)
+    entry_buscar = tk.Entry(ventana, width=40)
+    entry_buscar.grid(row=4, column=1, sticky="w", padx=5, pady=5)
+    entry_buscar.bind("<KeyRelease>", lambda event: buscar_en_tabla())
 
     # === Treeview para mostrar contactos (tipo tabla Excel) ===
     columns = ("Nombre", "Teléfono", "Email")
     tree = ttk.Treeview(ventana, columns=columns, show="headings")
-    tree.grid(row=4, column=0, columnspan=3, sticky="nsew", padx=5, pady=5)
+    tree.grid(row=5, column=0, columnspan=3, sticky="nsew", padx=5, pady=5)
     
     # Ordena la tabla cuando el usuario presiona sobre el encabezado de una columna
     for col in columns:
@@ -128,13 +172,14 @@ def crear_interfaz(ventana, gestor):
     scrollbar = ttk.Scrollbar(ventana, orient="vertical", command=tree.yview)
     tree.configure(yscroll=scrollbar.set)
     scrollbar.grid(row=4, column=3, sticky="ns")
+    
 
     # === CONFIGURACIÓN RESPONSIVA ===
     # Columnas de la ventana se expanden proporcionalmente
     ventana.grid_columnconfigure(0, weight=1)
     ventana.grid_columnconfigure(1, weight=2)
     ventana.grid_columnconfigure(2, weight=1)
-    ventana.grid_rowconfigure(4, weight=1)  # la tabla crece verticalmente
+    ventana.grid_rowconfigure(5, weight=1)  # la tabla crece verticalmente
 
     
 
