@@ -115,7 +115,7 @@ def crear_interfaz(ventana, gestor):
 
         # Agregar flecha al encabezado de la columna ordenada
         flecha = "▲" if not reverse else "▼"
-        treeview.heading(col, text=f"{col.center(50)}{flecha}")
+        treeview.heading(col, text=f"{col.center(10)}{flecha}")
 
         # Cambiar el encabezado para invertir la dirección al hacer clic
         treeview.heading(col, command=lambda _col=col, _rev=not reverse: ordenar_tabla(treeview, _col, _rev))
@@ -124,32 +124,34 @@ def crear_interfaz(ventana, gestor):
     # === ELEMENTOS GRÁFICOS ===
     ventana.title("Gestor de Contactos")
     ventana.minsize(500, 300)
+    ventana.configure(bg='#F9FAFB') # Fondo principal de la ventana
+
 
     # Para dar otro estilo a la tabla a la ventana
     style = ttk.Style(ventana)
     style.theme_use("clam")
 
     # Etiquetas
-    tk.Label(ventana, text="Nombre:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
-    tk.Label(ventana, text="Teléfono:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
-    tk.Label(ventana, text="Email:").grid(row=2, column=0, sticky="e", padx=5, pady=5)
+    tk.Label(ventana, text="Nombre:", bg='#F9FAFB', fg='#333333', font=('Segoe UI', 10)).grid(row=0, column=0, sticky="e", padx=5, pady=5)
+    tk.Label(ventana, text="Teléfono:", bg='#F9FAFB', fg='#333333', font=('Segoe UI', 10)).grid(row=1, column=0, sticky="e", padx=5, pady=5)
+    tk.Label(ventana, text="Email:", bg='#F9FAFB', fg='#333333', font=('Segoe UI', 10)).grid(row=2, column=0, sticky="e", padx=5, pady=5)
 
     # Campos de texto
-    entry_nombre = tk.Entry(ventana)
-    entry_telefono = tk.Entry(ventana)
-    entry_email = tk.Entry(ventana)
+    entry_nombre = tk.Entry(ventana, bg="#FFFFFF", fg="#333333", highlightbackground="#CCCCCC", highlightthickness=1, font=('Segoe UI', 10))
+    entry_telefono = tk.Entry(ventana, bg="#FFFFFF", fg="#333333", highlightbackground="#CCCCCC", highlightthickness=1, font=('Segoe UI', 10))
+    entry_email = tk.Entry(ventana, bg="#FFFFFF", fg="#333333", highlightbackground="#CCCCCC", highlightthickness=1, font=('Segoe UI', 10))
     entry_nombre.grid(row=0, column=1, sticky="we", padx=5, pady=5)
     entry_telefono.grid(row=1, column=1, sticky="we", padx=5, pady=5)
     entry_email.grid(row=2, column=1, sticky="we", padx=5, pady=5)
 
     # Botones
-    tk.Button(ventana, text="Agregar", command=agregar).grid(row=3, column=0, sticky="we", padx=5, pady=5)
-    tk.Button(ventana, text="Buscar", command=buscar).grid(row=3, column=1, sticky="we", padx=5, pady=5)
-    tk.Button(ventana, text="Eliminar", command=eliminar).grid(row=6, column=2, sticky="we", padx=5, pady=5)
+    tk.Button(ventana, text="Agregar", command=agregar, bg='#4CAF50', fg='white', activebackground='#66BB6A', relief='raised', borderwidth=1, font=('Segoe UI', 10)).grid(row=3, column=0, sticky="we", padx=5, pady=5)
+    tk.Button(ventana, text="Buscar", command=buscar, bg='#03A9F4', fg='white', activebackground='#29B6F6', relief='raised', borderwidth=1, font=('Segoe UI', 10)).grid(row=3, column=1, sticky="we", padx=5, pady=5)
+    tk.Button(ventana, text="Eliminar", command=eliminar, bg='#F44336', fg='white', activebackground='#EF5350', relief='raised', borderwidth=1, font=('Segoe UI', 10)).grid(row=6, column=2, sticky="we", padx=5, pady=5)
 
     # Buscar en tabla
-    tk.Label(ventana, text="Buscar: ").grid(row=4, column=0, sticky="e", padx=5, pady=5)
-    entry_buscar = tk.Entry(ventana, width=40)
+    tk.Label(ventana, text="Buscar: ", bg='#F9FAFB', fg='#333333', font=('Segoe UI', 10)).grid(row=4, column=0, sticky="e", padx=5, pady=5)
+    entry_buscar = tk.Entry(ventana, width=40, bg="#FFFFFF", fg="#333333", highlightbackground="#CCCCCC", highlightthickness=1, font=('Segoe UI', 10))
     entry_buscar.grid(row=4, column=1, sticky="w", padx=5, pady=5)
     entry_buscar.bind("<KeyRelease>", lambda event: buscar_en_tabla())
 
@@ -157,6 +159,12 @@ def crear_interfaz(ventana, gestor):
     columns = ("Nombre", "Teléfono", "Email")
     tree = ttk.Treeview(ventana, columns=columns, show="headings")
     tree.grid(row=5, column=0, columnspan=3, sticky="nsew", padx=5, pady=5)
+    # Configuración del estilo para el CUERPO de la tabla
+    style.configure("Treeview", background="#FFFFFF", foreground="#333333", font=('Segoe UI', 10))
+    # Configuración del estilo del elemento seleccionado de la tabla
+    style.map("Treeview", background=[('selected', '#E0F7FA')],foreground=[('selected', '#000000')])
+    # Configuración del estilo para el ENCABEZADO de la tabla (Treeview.Heading)
+    style.configure("Treeview.Heading", background="#F9FAFB", foreground="#212121", font=('Segoe UI', 10, 'bold'))
     
     # Ordena la tabla cuando el usuario presiona sobre el encabezado de una columna
     for col in columns:
