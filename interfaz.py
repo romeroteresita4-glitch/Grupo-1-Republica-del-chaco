@@ -1,5 +1,4 @@
 # interfaz.py
-# ------------
 # Contiene la definición de la interfaz gráfica del Gestor de Contactos.
 # No contiene lógica de negocio ni el bucle principal (eso está en main.py).
 
@@ -8,15 +7,9 @@ from tkinter import messagebox
 from tkinter import ttk  # Para Treeview (tabla con columnas)
 import re # para la funcion match para comparar el email con el patrón válido
 
+# Crea la interfaz gráfica dentro de una ventana Tk existente.
 def crear_interfaz(ventana, gestor):
-    """
-    Crea la interfaz gráfica dentro de una ventana Tk existente.
-
-    Parámetros:
-    - ventana: objeto Tk principal (creado en main.py)
-    - gestor: módulo o clase que contiene funciones de manejo de contactos
-              (agregar_contacto, buscar_contacto, eliminar_contacto, obtener_todos)
-    """
+    
     # funcion de validación de email
     def email_valido(email):
         # Regex básico para validar email
@@ -24,8 +17,9 @@ def crear_interfaz(ventana, gestor):
         return re.match(patron, email) is not None
 
     # === FUNCIONES INTERNAS DE LA INTERFAZ ===
+
+    # Agrega un nuevo contacto usando los datos del formulario.
     def agregar():
-        """Agrega un nuevo contacto usando los datos del formulario."""
         nombre = entry_nombre.get().strip()
         apellido = entry_apellido.get().strip()
         telefono = entry_telefono.get().strip()
@@ -43,19 +37,19 @@ def crear_interfaz(ventana, gestor):
         buscar_en_tabla()
         limpiar_campos()
 
+    # Busca contactos que coincidan con el campo de búsqueda.
     def buscar():
-        """Busca contactos por el campo que tenga contenido."""
         nombre = entry_nombre.get().strip()
         apellido = entry_apellido.get().strip()
         telefono = entry_telefono.get().strip()
         email = entry_email.get().strip()
         
-        # Verificar que al menos un campo tenga datos
+        # Verifica que al menos un campo tenga datos.
         if not any([nombre, apellido, telefono, email]):
             messagebox.showwarning("Atención", "Ingresa al menos un dato para buscar.")
             return
         
-        # Buscar según el campo que tenga contenido
+        # Busca según el campo que tenga contenido.
         resultados = []
         if nombre:
             resultados = [c for c in gestor.obtener_todos() if nombre.lower() in c['nombre'].lower()]
@@ -66,19 +60,19 @@ def crear_interfaz(ventana, gestor):
         elif email:
             resultados = [c for c in gestor.obtener_todos() if email.lower() in c['email'].lower()]
         
-        # Mostrar resultados en ventana personalizada
+        # Muestra los resultados en ventana personalizada.
         if resultados:
-            # Crear ventana personalizada
+            # Crear ventana personalizada.
             ventana_resultado = tk.Toplevel(ventana)
             ventana_resultado.title("Resultado de búsqueda")
             ventana_resultado.configure(bg='#F9FAFB')
             ventana_resultado.geometry("500x300")
             
-            # Frame con scrollbar
+            # Frame con scrollbar.
             frame_principal = tk.Frame(ventana_resultado, bg='#F9FAFB')
             frame_principal.pack(fill="both", expand=True, padx=20, pady=20)
             
-            # Texto con scrollbar
+            # Texto con scrollbar.
             scrollbar_resultado = tk.Scrollbar(frame_principal)
             scrollbar_resultado.pack(side="right", fill="y")
             
@@ -96,7 +90,7 @@ def crear_interfaz(ventana, gestor):
             texto_resultado.pack(side="left", fill="both", expand=True)
             scrollbar_resultado.config(command=texto_resultado.yview)
             
-            # Preparar contenido
+            # Preparar contenido.
             if len(resultados) == 1:
                 c = resultados[0]
                 contenido = f"☺  {c['nombre']}, {c['apellido']}\n✆  {c['telefono']}\n✉  {c['email']}"
@@ -108,7 +102,7 @@ def crear_interfaz(ventana, gestor):
             texto_resultado.insert("1.0", contenido)
             texto_resultado.config(state="disabled")  # Solo lectura
             
-            # Botón cerrar
+            # Botón cerrar.
             tk.Button(
                 ventana_resultado, 
                 text="Cerrar", 
@@ -123,23 +117,23 @@ def crear_interfaz(ventana, gestor):
         else:
             messagebox.showinfo("Sin resultados", "No se encontraron contactos con ese criterio.")
 
-    # busqueda automática en tabla
+    # Busqueda automática en tabla.
     def buscar_en_tabla():
         busqueda = entry_buscar.get().strip().lower()
 
-        # si el input buscar está vacío muesta todos los contactos
+        # Si el input buscar está vacío muesta todos los contactos.
         if not busqueda:
             actualizar_lista()
             ordenar_tabla(tree, columns[0], False) 
             return
         
-        # si el input no está vacío busca contactos que coincidan con la búsqueda
+        # Si el input no está vacío busca contactos que coincidan con la búsqueda.
         resultados_busqueda = gestor.buscar_contactos(busqueda)
         actualizar_lista(resultados_busqueda)
         ordenar_tabla(tree, columns[0], False)
-        
-    def eliminar():
-        """Elimina el contacto seleccionado."""       
+    
+    # Elimina al contacto seleccionado.
+    def eliminar():      
         contacto = tree.selection()
         if not contacto:
             messagebox.showwarning("Selecciona", "Debes seleccionar un contacto para eliminar.")
@@ -154,44 +148,44 @@ def crear_interfaz(ventana, gestor):
             gestor.eliminar_contacto(nombre, apellido)
             buscar_en_tabla()
         
+    # Actualiza la lista de contactos en la tabla.
     def actualizar_lista(resultados_busqueda=None):
-        """Actualiza la lista de contactos mostrada en pantalla."""
         for item in tree.get_children():
             tree.delete(item)
         for c in gestor.obtener_todos(resultados_busqueda):
             tree.insert("", "end", values=(c['nombre'], c['apellido'], c['telefono'], c['email']))
 
+    # Limpia los campos de texto del formulario.
     def limpiar_campos():
-        """Limpia los campos de texto del formulario."""
         entry_nombre.delete(0, tk.END)
         entry_apellido.delete(0, tk.END)
         entry_telefono.delete(0, tk.END)
         entry_email.delete(0, tk.END)
         
-    # se utiliza para ordenar los contactos según la columna de preferencia del usuario
+    # Se utiliza para ordenar los contactos según la columna de preferencia del usuario.
     def ordenar_tabla(treeview, col, reverse):
-        # Obtener todos los datos
+        # Obtiene todos los datos.
         data = [(treeview.set(k, col), k) for k in treeview.get_children('')]
 
-        # Para que ordene números como números y no como strings
+        # Para que ordene números como números y no como strings.
         try:
             data.sort(key=lambda t: int(t[0]), reverse=reverse)
         except ValueError:
             data.sort(key=lambda t: t[0].lower(), reverse=reverse)
 
-        # Reordenar en el treeview
+        # Reordena en el treeview
         for index, (val, k) in enumerate(data):
             treeview.move(k, '', index)
 
-        # Limpiar flechas de todos los encabezados
+        # Limpia flechas de todos los encabezados.
         for c in treeview["columns"]:
             treeview.heading(c, text=c)
 
-        # Agregar flecha al encabezado de la columna ordenada
+        # Agrega flecha al encabezado de la columna ordenada.
         flecha = "▲" if not reverse else "▼"
         treeview.heading(col, text=f"{col.center(10)}{flecha}")
 
-        # Cambiar el encabezado para invertir la dirección al hacer clic
+        # Cambia el encabezado para invertir la dirección al hacer clic.
         treeview.heading(col, command=lambda _col=col, _rev=not reverse: ordenar_tabla(treeview, _col, _rev))
 
 
@@ -201,7 +195,7 @@ def crear_interfaz(ventana, gestor):
     ventana.configure(bg='#F9FAFB') # Fondo principal de la ventana
 
 
-    # Para dar otro estilo a la tabla a la ventana
+    # Para dar otro estilo a la tabla a la ventana.
     style = ttk.Style(ventana)
     style.theme_use("clam")
 
@@ -251,14 +245,14 @@ def crear_interfaz(ventana, gestor):
     # Configuración del estilo para el ENCABEZADO de la tabla (Treeview.Heading)
     style.configure("Treeview.Heading", background="#F9FAFB", foreground="#212121", font=('Segoe UI', 10, 'bold'))
     
-    # Ordena la tabla cuando el usuario presiona sobre el encabezado de una columna
+    # Ordena la tabla cuando el usuario presiona sobre el encabezado de una columna.
     for col in columns:
         tree.heading(col, text=col, command=lambda _col=col: ordenar_tabla(tree, _col, False))
     
-    # Cargar lista inicial
+    # Cargar lista inicial.
     actualizar_lista()
 
-    # Ordena la tabla al iniciar por la primer columna de forma ascendente
+    # Ordena la tabla al iniciar por la primer columna de forma ascendente.
     ordenar_tabla(tree, columns[0], False)
 
     # Scroll vertical

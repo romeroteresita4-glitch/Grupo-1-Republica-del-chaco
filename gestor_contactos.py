@@ -1,24 +1,34 @@
 # gestor_contactos.py
-# -------------------
 # Módulo encargado de manejar la lógica de los contactos:
-# agregar, buscar, eliminar y obtener todos.
+# cargar, guardar, agregar, buscar, eliminar y obtener todos.
 
-# Lista global donde se guardan los contactos
-contactos = []
+import os 
+import csv
 
-contactos.extend([
-    {'nombre': 'Juan', 'apellido': 'Alonso', 'email': 'juan@ejemplo.com', 'telefono': '3644242523'},
-    {'nombre': 'Pedro', 'apellido': 'Araujo', 'email': 'pedrito@hotmail.com', 'telefono': '3644202542'},
-    {'nombre': 'Juana', 'apellido': 'Araujo', 'email': 'juanaaraujo@gmail.com', 'telefono': '1124202523'},
-    {'nombre': 'Maria', 'apellido': 'Lopez', 'email': 'marial@ejemplo.com', 'telefono': '3624299523'},
-    {'nombre': 'Susana', 'apellido': 'Diaz', 'email': 'susana@gmail.com', 'telefono': '1144212323'}
-])
+# Ruta de archivo csv para guardar contactos.
+RUTA_ARCHIVO = os.path.join(os.path.dirname(__file__), "contactos.csv")
 
+# Carga los contactos desde un archivo csv.
+def cargar_contactos():
+    if not os.path.exists(RUTA_ARCHIVO):
+        return []
+    with open(RUTA_ARCHIVO, mode="r", newline="", encoding="utf-8") as f:
+        lector = csv.DictReader(f)
+        return list(lector)
+
+# Guarda la lista de contactos actual en un archivo csv.
+def guardar_contactos():
+    with open(RUTA_ARCHIVO, mode="w", newline="", encoding="utf-8") as f:
+        campos = ["nombre", "apellido", "telefono", "email"]
+        escritor = csv.DictWriter(f, fieldnames=campos)
+        escritor.writeheader()
+        escritor.writerows(contactos)
+
+# Se guardan los contactos del csv en la variable contactos.
+contactos = cargar_contactos()
+
+# Agrega un nuevo contacto en la lista. Si el contacto ya existe lo actualiza.
 def agregar_contacto(nombre, apellido, telefono, email):
-    """
-    Agrega un nuevo contacto al listado.
-    Si el contacto ya existe (mismo nombre y apellido), lo actualiza.
-    """
     existente = buscar_contacto(nombre, apellido)
     if existente:
         existente["telefono"] = telefono
@@ -26,21 +36,17 @@ def agregar_contacto(nombre, apellido, telefono, email):
     else:
         contacto = {"nombre": nombre, "apellido": apellido, "telefono": telefono, "email": email}
         contactos.append(contacto)
+    guardar_contactos()
 
+# Busca un contacto por nombre y apellido (sin distinguir mayúsculas ni minúsculas).
 def buscar_contacto(nombre, apellido):
-    """
-    Busca un contacto por nombre y apellido (sin distinguir mayúsculas/minúsculas).
-    Devuelve el diccionario del contacto o None si no existe.
-    """
     for c in contactos:
         if c["nombre"].lower() == nombre.lower() and c["apellido"].lower() == apellido.lower():
             return c
     return None
 
+# Busca a los contactos que coincidan en cualquier campo con el texto de búsqueda ingresado.
 def buscar_contactos(busqueda):
-    """
-    Busca contactos que coincidan con el texto de búsqueda en cualquier campo.
-    """
     resultados_busqueda = [
         c for c in contactos 
         if busqueda in c['nombre'].lower() 
@@ -52,17 +58,14 @@ def buscar_contactos(busqueda):
         return resultados_busqueda
     return 'Vacio'
 
+# Elimina un contacto por nombre y apellido.
 def eliminar_contacto(nombre, apellido):
-    """
-    Elimina un contacto por nombre y apellido.
-    """
     global contactos
     contactos = [c for c in contactos if not (c['nombre'] == nombre and c['apellido'] == apellido)]
+    guardar_contactos()
 
+# Devuelve una lista con todos los contactos actuales.
 def obtener_todos(resultados_busqueda=None):
-    """
-    Devuelve una lista de todos los contactos actuales.
-    """
     if not resultados_busqueda:
         return contactos
     elif resultados_busqueda == 'Vacio':
