@@ -159,7 +159,7 @@ def crear_interfaz(ventana, gestor):
 
     ventana.title("Gestor de Contactos")
     ventana.minsize(600, 400)
-    ventana.configure(bg='#F9FAFB') # Fondo principal de la ventana
+    ventana.configure(bg='#F9FAFB')
 
 
     style = ttk.Style(ventana)
