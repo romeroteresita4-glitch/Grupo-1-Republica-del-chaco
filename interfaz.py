@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
-from tkinter import ttk  # Para Treeview (tabla con columnas)
-import re # para la funcion match para comparar el email con el patrón válido
+from tkinter import ttk
+import re
 
 def crear_interfaz(ventana, gestor):
     
@@ -82,7 +82,7 @@ def crear_interfaz(ventana, gestor):
                     contenido += f"☺  {c['nombre']}, {c['apellido']}\n✆  {c['telefono']}\n✉  {c['email']}\n\n"
             
             texto_resultado.insert("1.0", contenido)
-            texto_resultado.config(state="disabled")  # Solo lectura
+            texto_resultado.config(state="disabled")
             
             tk.Button(
                 ventana_resultado, 
@@ -217,4 +217,4 @@ def crear_interfaz(ventana, gestor):
     ventana.grid_columnconfigure(0, weight=1)
     ventana.grid_columnconfigure(1, weight=2)
     ventana.grid_columnconfigure(2, weight=1)
-    ventana.grid_rowconfigure(6, weight=1)  # la tabla crece verticalmente
+    ventana.grid_rowconfigure(6, weight=1)
